@@ -33,14 +33,14 @@ class PositionTest {
         4k3/P7/8/8/8/8/8/4K3 w - - 0 1; a7a8q; Q3k3/8/8/8/8/8/8/4K3 b - - 0 1
         """)
     void playsMove(String fen, String uci, String expectedFen) {
-        assertThat(Fen.format(Fen.parse(fen).play(move(uci)))).isEqualTo(expectedFen);
+        assertThat(Fen.format(Fen.parse(fen).play(Move.fromUci(uci)))).isEqualTo(expectedFen);
     }
 
     @Test
     void leavesOriginalPositionUnchanged() {
         Position position = Fen.parse(Fen.STARTING_POSITION);
 
-        position.play(move("e2e4"));
+        position.play(Move.fromUci("e2e4"));
 
         assertThat(Fen.format(position)).isEqualTo(Fen.STARTING_POSITION);
     }
@@ -49,12 +49,6 @@ class PositionTest {
     void rejectsMoveFromEmptySquare() {
         Position position = Fen.parse(Fen.STARTING_POSITION);
 
-        assertThatIllegalArgumentException().isThrownBy(() -> position.play(move("e4e5")));
-    }
-
-    private static Move move(String uci) {
-        Square from = Square.fromName(uci.substring(0, 2));
-        Square to = Square.fromName(uci.substring(2, 4));
-        return uci.length() == 5 ? new Move(from, to, PieceType.fromSymbol(uci.charAt(4))) : new Move(from, to);
+        assertThatIllegalArgumentException().isThrownBy(() -> position.play(Move.fromUci("e4e5")));
     }
 }
