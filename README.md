@@ -10,7 +10,7 @@ Plateforme d'échecs multijoueur en temps réel, inspirée de Lichess en version
 
 | Module | Rôle |
 |---|---|
-| `engine` | Règles des échecs en Java pur, sans dépendance : plateau, lecture et écriture FEN, coups légaux (roque, prise en passant, promotion), détection de l'échec |
+| `engine` | Règles des échecs en Java pur, sans dépendance : coups légaux (roque, prise en passant, promotion), fin de partie (mat, pat, matériel insuffisant, règle des 50 coups, triple répétition), notations FEN, UCI et SAN, export PGN |
 
 ## Prérequis
 
