@@ -15,5 +15,5 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: maven
-      - name: Compilation et tests
-        run: ./mvnw --batch-mode verify
+      - name: Compilation et tests, lents compris
+        run: ./mvnw --batch-mode verify -DexcludedGroups=

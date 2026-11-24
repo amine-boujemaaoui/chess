@@ -42,6 +42,44 @@ public final class Position {
         this.fullmoveNumber = fullmoveNumber;
     }
 
+    /**
+     * Joue un coup et renvoie la nouvelle position ; celle-ci reste inchangée. Le coup doit être
+     * pseudo-légal (voir {@link MoveGenerator}) : sa légalité n'est pas vérifiée ici.
+     *
+     * @throws IllegalArgumentException si la case de départ est vide
+     */
+    public Position play(Move move) {
+        Square from = move.from();
+        Square to = move.to();
+        Piece piece = pieceAt(from)
+                .orElseThrow(() -> new IllegalArgumentException("No piece on " + from + " for move " + move));
+        boolean isPawn = piece.type() == PieceType.PAWN;
+
+        Map<Square, Piece> board = new EnumMap<>(Square.class);
+        board.putAll(pieces);
+        board.remove(from);
+        Piece captured = board.put(to, move.promotion().map(type -> new Piece(piece.color(), type)).orElse(piece));
+
+        if (isPawn && to == enPassantSquare && from.file() != to.file()) {
+            board.remove(Square.of(to.file(), from.rank()));
+        }
+        if (piece.type() == PieceType.KING && Math.abs(to.file() - from.file()) == 2) {
+            boolean kingSide = to.file() > from.file();
+            Square rookFrom = Square.of(kingSide ? 7 : 0, from.rank());
+            Square rookTo = Square.of(kingSide ? 5 : 3, from.rank());
+            board.put(rookTo, board.remove(rookFrom));
+        }
+
+        boolean doubleAdvance = isPawn && Math.abs(to.rank() - from.rank()) == 2;
+        return new Position(
+                board,
+                sideToMove.opposite(),
+                castlingRights.revokedBy(from).revokedBy(to),
+                doubleAdvance ? Square.of(from.file(), (from.rank() + to.rank()) / 2) : null,
+                isPawn || captured != null ? 0 : halfmoveClock + 1,
+                sideToMove == Color.BLACK ? fullmoveNumber + 1 : fullmoveNumber);
+    }
+
     public Optional<Piece> pieceAt(Square square) {
         return Optional.ofNullable(pieces.get(square));
     }

@@ -21,6 +21,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>6.1.3</junit.version>
         <assertj.version>3.27.7</assertj.version>
+        <!-- Tests lents exclus du build local ; la CI les lance avec -DexcludedGroups= -->
+        <excludedGroups>slow</excludedGroups>
     </properties>
 
     <dependencyManagement>

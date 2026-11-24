@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class MoveGeneratorTest {
 
@@ -105,8 +107,85 @@ class MoveGeneratorTest {
             .containsExactlyInAnyOrder("a2a1q", "a2a1r", "a2a1b", "a2a1n");
     }
 
+    @Test
+    void pawnCapturesEnPassant() {
+        assertThat(movesFrom("4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1", Square.E5))
+            .containsExactlyInAnyOrder("e5e6", "e5d6");
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = ';', textBlock = """
+        rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1; false
+        4k3/8/8/8/8/8/8/4K2r w - - 0 1;                           true
+        4k3/8/8/8/8/8/8/4K1Br w - - 0 1;                          false
+        4k3/3P4/8/8/8/8/8/4K3 b - - 0 1;                          true
+        4k3/4P3/8/8/8/8/8/4K3 b - - 0 1;                          false
+        4k3/8/3N4/8/8/8/8/4K3 b - - 0 1;                          true
+        4k3/8/8/b7/8/8/8/4K3 w - - 0 1;                           true
+        """)
+    void detectsCheck(String fen, boolean inCheck) {
+        assertThat(MoveGenerator.isInCheck(Fen.parse(fen))).isEqualTo(inCheck);
+    }
+
+    @Test
+    void startingPositionHasTwentyLegalMoves() {
+        assertThat(legalMovesOf(Fen.STARTING_POSITION)).hasSize(20);
+    }
+
+    @Test
+    void pinnedPieceCannotLeaveThePin() {
+        assertThat(legalMovesOf("4k3/4r3/8/8/8/8/4N3/4K3 w - - 0 1"))
+            .noneMatch(move -> move.startsWith("e2"));
+    }
+
+    @Test
+    void kingCannotMoveIntoCheck() {
+        assertThat(legalMovesOf("3rk3/8/8/8/8/8/8/4K3 w - - 0 1"))
+            .containsExactlyInAnyOrder("e1e2", "e1f1", "e1f2");
+    }
+
+    @Test
+    void checkMustBeAnswered() {
+        assertThat(legalMovesOf("4k3/8/8/8/8/8/8/R3K2r w - - 0 1"))
+            .containsExactlyInAnyOrder("e1d2", "e1e2", "e1f2");
+    }
+
+    @Test
+    void enPassantExposingTheKingIsIllegal() {
+        assertThat(legalMovesOf("8/8/8/KPp4r/8/8/8/4k3 w - c6 0 1"))
+            .contains("b5b6")
+            .doesNotContain("b5c6");
+    }
+
+    @ParameterizedTest(name = "{2}")
+    @CsvSource(delimiter = ';', textBlock = """
+        r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1;   e1g1 e1c1; deux roques possibles
+        r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1;   e8g8 e8c8; roques des noirs
+        r3k2r/8/8/8/8/8/8/R3K2R w kq - 0 1;     ;          sans droit de roque
+        r3k2r/8/8/8/8/8/8/RN2K1NR w KQkq - 0 1; ;          cases bloquées
+        r3k2r/8/8/8/4r3/8/8/R3K2R w KQkq - 0 1; ;          roi en échec
+        r3k2r/8/8/8/5r2/8/8/R3K2R w KQkq - 0 1; e1c1;      case traversée attaquée
+        r3k2r/8/8/8/6r1/8/8/R3K2R w KQkq - 0 1; e1c1;      destination attaquée
+        r3k2r/8/8/8/1r6/8/8/R3K2R w KQkq - 0 1; e1g1 e1c1; b1 attaquée sans gêner le grand roque
+        """)
+    void castlesOnlyWhenAllowed(String fen, String expectedCastlings, String description) {
+        Position position = Fen.parse(fen);
+        Square kingSquare = position.sideToMove() == Color.WHITE ? Square.E1 : Square.E8;
+        List<String> castlings = MoveGenerator.legalMoves(position).stream()
+            .filter(move -> move.from() == kingSquare && Math.abs(move.to().file() - kingSquare.file()) == 2)
+            .map(Move::toString)
+            .toList();
+
+        assertThat(castlings).containsExactlyInAnyOrder(
+            expectedCastlings == null ? new String[0] : expectedCastlings.split(" "));
+    }
+
     private static List<String> movesOf(String fen) {
         return MoveGenerator.pseudoLegalMoves(Fen.parse(fen)).stream().map(Move::toString).toList();
+    }
+
+    private static List<String> legalMovesOf(String fen) {
+        return MoveGenerator.legalMoves(Fen.parse(fen)).stream().map(Move::toString).toList();
     }
 
     private static List<String> movesFrom(String fen, Square from) {

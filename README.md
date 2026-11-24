@@ -8,7 +8,7 @@ Plateforme d'échecs multijoueur en temps réel, inspirée de Lichess en version
 
 | Module | Rôle |
 |---|---|
-| `engine` | Règles des échecs en Java pur, sans dépendance : plateau, lecture et écriture FEN, coups pseudo-légaux |
+| `engine` | Règles des échecs en Java pur, sans dépendance : plateau, lecture et écriture FEN, coups légaux (roque, prise en passant, promotion), détection de l'échec |
 
 ## Prérequis
 
@@ -21,6 +21,12 @@ Maven n'a pas besoin d'être installé : le projet fournit le wrapper Maven (`mv
 ```bash
 ./mvnw verify        # Linux, macOS
 mvnw.cmd verify      # Windows
+```
+
+Les tests perft les plus profonds (marqués `slow`, une quinzaine de secondes) sont exclus par défaut. La CI les lance toujours ; pour les lancer en local :
+
+```bash
+./mvnw verify -DexcludedGroups=
 ```
 
 ## Licence

@@ -20,11 +20,12 @@ public final class Fen {
             throw new InvalidFenException("FEN must have 6 fields, found " + fields.length + ": \"" + fen + "\"");
         }
         try {
+            Color sideToMove = parseSideToMove(fields[1]);
             return new Position(
                     parsePieces(fields[0]),
-                    parseSideToMove(fields[1]),
+                    sideToMove,
                     parseCastlingRights(fields[2]),
-                    parseEnPassantSquare(fields[3]),
+                    parseEnPassantSquare(fields[3], sideToMove),
                     parseCounter(fields[4], "halfmove clock"),
                     parseCounter(fields[5], "fullmove number"));
         } catch (InvalidFenException e) {
@@ -120,13 +121,16 @@ public final class Fen {
         return field.isEmpty() ? "-" : field;
     }
 
-    private static Square parseEnPassantSquare(String field) {
+    private static Square parseEnPassantSquare(String field, Color sideToMove) {
         if (field.equals("-")) {
             return null;
         }
         Square square = Square.fromName(field);
-        if (square.rank() != 2 && square.rank() != 5) {
-            throw new InvalidFenException("En passant square must be on rank 3 or 6, found " + field);
+        // La case est derrière le pion adverse qui vient d'avancer de deux cases.
+        int expectedRank = sideToMove == Color.WHITE ? 5 : 2;
+        if (square.rank() != expectedRank) {
+            throw new InvalidFenException(
+                    "En passant square must be on rank " + (expectedRank + 1) + ", found " + field);
         }
         return square;
     }
