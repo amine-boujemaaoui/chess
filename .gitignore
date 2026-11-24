@@ -1,0 +1,23 @@
+# Maven
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+
+# Environnement
+.env
+*.log
+
+# Système
+.DS_Store
+Thumbs.db
