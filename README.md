@@ -1,5 +1,7 @@
 # Chess
 
+[![CI](https://github.com/amine-boujemaaoui/chess/actions/workflows/ci.yml/badge.svg)](https://github.com/amine-boujemaaoui/chess/actions/workflows/ci.yml)
+
 Plateforme d'échecs multijoueur en temps réel, inspirée de Lichess en version réduite.
 
 > Projet en cours de développement.
