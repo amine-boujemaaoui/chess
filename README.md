@@ -8,7 +8,7 @@ Plateforme d'échecs multijoueur en temps réel, inspirée de Lichess en version
 
 | Module | Rôle |
 |---|---|
-| `engine` | Règles des échecs en Java pur, sans dépendance |
+| `engine` | Règles des échecs en Java pur, sans dépendance : plateau, lecture et écriture FEN, coups pseudo-légaux |
 
 ## Prérequis
 
