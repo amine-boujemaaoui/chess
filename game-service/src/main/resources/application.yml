@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: game-service
+  config:
+    # En local, les identifiants de la base sont lus dans le même fichier que Docker Compose.
+    import: optional:file:../infra/.env[.properties]
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:chess}
+    username: ${POSTGRES_USER:chess}
+    password: ${POSTGRES_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
