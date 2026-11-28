@@ -13,6 +13,11 @@ spring:
     hibernate:
       ddl-auto: validate
 
+chess:
+  jwt:
+    secret: ${JWT_SECRET:}
+    expiration: 24h
+
 management:
   endpoints:
     web:

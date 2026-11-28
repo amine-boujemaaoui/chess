@@ -1,0 +1,3 @@
+chess:
+  jwt:
+    secret: test-secret-for-integration-tests-only-0123456789
