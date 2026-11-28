@@ -11,7 +11,7 @@ Plateforme d'échecs multijoueur en temps réel, inspirée de Lichess en version
 | Module | Rôle |
 |---|---|
 | `engine` | Règles des échecs en Java pur, sans dépendance : coups légaux (roque, prise en passant, promotion), fin de partie (mat, pat, matériel insuffisant, règle des 50 coups, triple répétition), notations FEN, UCI et SAN, export PGN |
-| `game-service` | Application Spring Boot : API REST, PostgreSQL (migrations Flyway), documentation Swagger, erreurs au format `ProblemDetail` (RFC 9457) |
+| `game-service` | Application Spring Boot : API REST, authentification JWT, PostgreSQL (migrations Flyway), documentation Swagger, erreurs au format `ProblemDetail` (RFC 9457) |
 | `infra` | Docker Compose pour lancer PostgreSQL en local |
 
 ## Prérequis
@@ -37,7 +37,7 @@ Les tests perft les plus profonds (marqués `slow`, une quinzaine de secondes) s
 ## Lancer le service en local
 
 ```bash
-cp infra/.env.example infra/.env     # puis choisir un mot de passe dans infra/.env
+cp infra/.env.example infra/.env     # puis remplir POSTGRES_PASSWORD et JWT_SECRET
 docker compose -f infra/docker-compose.yml up -d
 ./mvnw install -DskipTests
 ./mvnw -pl game-service spring-boot:run
@@ -47,6 +47,18 @@ docker compose -f infra/docker-compose.yml up -d
 
 - état du service : http://localhost:8080/actuator/health
 - documentation de l'API (Swagger UI) : http://localhost:8080/swagger-ui/index.html
+
+## Authentification
+
+| Route | Accès | Rôle |
+|---|---|---|
+| `POST /api/auth/register` | public | crée un compte joueur (`username`, `password`) et renvoie un jeton |
+| `POST /api/auth/login` | public | renvoie un jeton |
+| `GET /api/players/me` | jeton | profil du joueur connecté |
+
+Les routes protégées attendent l'en-tête `Authorization: Bearer <jeton>`. Le jeton est un JWT signé (HS256) avec `JWT_SECRET`, valable 24 heures. Les mots de passe sont hachés avec BCrypt. Les rôles sont `PLAYER`, attribué à l'inscription, et `ADMIN`, qui donne accès aux routes `/api/admin/**`.
+
+Dans Swagger UI, le bouton « Authorize » permet de coller un jeton pour essayer les routes protégées.
 
 ## Licence
 
